@@ -39,9 +39,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          mkdir -p dist/fuel/v1 && shopt -s extglob dotglob && mv dist/!(fuel) dist/fuel/v1/ && cp public/_headers dist/_headers
-          npx --yes wrangler@3 pages deploy dist --project-name=rdlabs-data --branch=main --commit-dirty=true
-          mv dist/fuel/v1/* dist/ 2>/dev/null || true
+          mkdir -p site/fuel/v1
+          cp -r dist/. site/fuel/v1/
+          cp public/_headers site/_headers
+          npx --yes wrangler@3 pages deploy site --project-name=rdlabs-data --branch=main --commit-dirty=true
       - name: Commit last good data
         run: |
           echo "${{ steps.build.outputs.digest }}" > data/.digest
