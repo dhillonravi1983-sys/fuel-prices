@@ -22,9 +22,6 @@ jobs:
         run: npm test
       - name: Collect, validate, build dist
         id: build
-        env:
-          FUELFINDER_CLIENT_ID: ${{ secrets.FUELFINDER_CLIENT_ID }}
-          FUELFINDER_CLIENT_SECRET: ${{ secrets.FUELFINDER_CLIENT_SECRET }}
         run: |
           set -o pipefail
           node run.mjs | tee run.log
