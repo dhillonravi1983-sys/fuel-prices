@@ -34,3 +34,26 @@ test('outlier prices are dropped before validation, not published', () => {
   assert.equal(dropOutliers(s), 1);
   assert.equal(Object.keys(s.at(-1).p).length, 0);
 });
+
+import { parseBangchak } from '../collectors/th.mjs';
+const sample = [{ OilDateNow: '08/11/2026', OilPriceDate: '07/11/2026', OilList: JSON.stringify([
+  { OilName: 'Gasohol 95 S EVO', PriceToday: 40.5, PriceTomorrow: 40.2 },
+  { OilName: 'Hi Diesel S', PriceToday: 33.04, PriceTomorrow: 33.04 },
+  { OilName: 'Gasohol 98 Plus', PriceToday: 50, PriceTomorrow: 50 },
+]) }];
+test('th parse maps keys, x1000, announced and history', () => {
+  const f = parseBangchak(sample, null, new Date('2026-11-08T02:00:00Z'));
+  assert.deepEqual(f.fuels, { gasohol95: { BCP: 40500 }, dieselB7: { BCP: 33040 } });
+  assert.equal(f.announced.length, 1);
+  assert.equal(f.announced[0].delta, -300);
+  assert.equal(f.announced[0].effectiveAt, '2026-11-08T22:00:00.000Z');
+  assert.equal(f.history.gasohol95.length, 1);
+  assert.equal(parseBangchak(sample, f, new Date('2026-11-08T03:00:00Z')).history.gasohol95.length, 1);
+  assert.equal(validateNational(f, Date.parse('2026-11-08T03:00:00Z')).ok, true);
+});
+test('th national gate rejects big jump and stale', () => {
+  const f = parseBangchak(sample, null, new Date('2026-11-08T02:00:00Z'));
+  const jumped = structuredClone(f); jumped.fuels.gasohol95.BCP = 60000;
+  assert.equal(validateNational(jumped, Date.parse('2026-11-08T03:00:00Z'), f).ok, false);
+  assert.equal(validateNational(f, Date.parse('2026-12-08T03:00:00Z')).ok, false);
+});
