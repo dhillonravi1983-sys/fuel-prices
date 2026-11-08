@@ -17,7 +17,7 @@ for (const key of wanted.length ? wanted : Object.keys(ADAPTERS)) {
   const [market, collect] = ADAPTERS[key];
   try {
     const prevFile = path.join(root, 'data', market, 'current.json');
-    const r = await collect(fs.existsSync(prevFile) ? JSON.parse(fs.readFileSync(prevFile, 'utf8')) : null);
+    const r = market === 'TH' ? await collect(fs.existsSync(prevFile) ? JSON.parse(fs.readFileSync(prevFile, 'utf8')) : null) : await collect();
     const last = state.status.markets[market];
     if (r.national) {
       const prev = last && fs.existsSync(prevFile) ? JSON.parse(fs.readFileSync(prevFile, 'utf8')) : null;
